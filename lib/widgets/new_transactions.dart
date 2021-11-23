@@ -5,6 +5,7 @@ import 'package:intl/intl.dart';
 
 class NewTransaction extends StatefulWidget {
   final Function addTrans;
+
   NewTransaction(this.addTrans);
 
   @override
@@ -65,7 +66,7 @@ class _NewTransactionState extends State<NewTransaction> {
             crossAxisAlignment: CrossAxisAlignment.end,
             children: <Widget>[
               TextField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Title',
                   labelStyle: TextStyle(fontSize: 15),
                 ),
@@ -74,7 +75,7 @@ class _NewTransactionState extends State<NewTransaction> {
                 onSubmitted: (_) => sumbitData(),
               ),
               TextField(
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Amount',
                   labelStyle: TextStyle(fontSize: 15),
                 ),
@@ -95,7 +96,7 @@ class _NewTransactionState extends State<NewTransaction> {
                     ),
                     FlatButton(
                       onPressed: _presentDatePicker,
-                      child: Text(
+                      child: const Text(
                         'Choose date',
                         style: TextStyle(fontWeight: FontWeight.bold),
                       ),
@@ -106,7 +107,7 @@ class _NewTransactionState extends State<NewTransaction> {
               ),
               RaisedButton(
                 onPressed: sumbitData,
-                child: Text(
+                child: const Text(
                   'Add Transaction',
                   style: TextStyle(
                       fontWeight: FontWeight.bold, color: Colors.white),

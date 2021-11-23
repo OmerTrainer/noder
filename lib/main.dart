@@ -35,27 +35,47 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with WidgetsBindingObserver {
+  bool _showChart = false;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance!.addObserver(this);
+    super.initState();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print(state);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance!.removeObserver(this);
+    super.dispose();
+  }
+
   final List<Transaction> _userTransactions = [
-    Transaction(
-      id: '1',
-      title: 'Shoes',
-      price: 229.99,
-      date: DateTime.now(),
-    ),
-    Transaction(
-      id: '2',
-      title: 'Shirt',
-      price: 49.99,
-      date: DateTime.now(),
-    ),
-    Transaction(
-      id: '3',
-      title: 'Food',
-      price: 11.99,
-      date: DateTime.now(),
-    )
+    //   Transaction(
+    //     id: '1',
+    //     title: 'Shoes',
+    //     price: 229.99,
+    //     date: DateTime.now(),
+    //   ),
+    //   Transaction(
+    //     id: '2',
+    //     title: 'Shirt',
+    //     price: 49.99,
+    //     date: DateTime.now(),
+    //   ),
+    //   Transaction(
+    //     id: '3',
+    //     title: 'Food',
+    //     price: 11.99,
+    //     date: DateTime.now(),
+    //   )
   ];
+
   List<Transaction> get _recentTransaction {
     return _userTransactions.where((tx) {
       return tx.date.isAfter(DateTime.now().subtract(Duration(days: 7)));
@@ -83,26 +103,70 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  List<Widget> _buildPortraitContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget transListWidget) {
+    return [
+      Container(
+        height: (mediaQuery.size.height -
+                appBar.preferredSize.height -
+                mediaQuery.padding.top) *
+            0.3,
+        child: Chart(_userTransactions),
+      ),
+      transListWidget
+    ];
+  }
+
+  List<Widget> _buildLandscapeContent(
+      MediaQueryData mediaQuery, AppBar appBar, Widget transListWidget) {
+    return [
+      Row(
+        children: <Widget>[
+          Text('Show Chart'),
+          Switch(
+            value: _showChart,
+            onChanged: (val) => {
+              setState(() {
+                _showChart = val;
+              })
+            },
+          )
+        ],
+      ),
+      _showChart
+          ? Container(
+              height: (mediaQuery.size.height -
+                      appBar.preferredSize.height -
+                      mediaQuery.padding.top) *
+                  0.7,
+              child: Chart(_userTransactions),
+            )
+          : transListWidget
+    ];
+  }
+
   void deleteTransaction(String id) {
     setState(() {
       _userTransactions.removeWhere((element) => element.id == id);
     });
   }
 
-  bool _showChart = false;
   @override
   Widget build(BuildContext context) {
     final mediaQuery = MediaQuery.of(context);
+
     final bool isLandscape =
         MediaQuery.of(context).orientation == Orientation.landscape;
+
     final appBar = AppBar(
-      title: Text('Expenses App'),
+      title: const Text('Expenses App'),
       actions: <Widget>[
         IconButton(
             onPressed: () => _startAddNewTransaction(context),
             icon: Icon(Icons.add))
       ],
     );
+
     final transListWidget = Container(
       height: (mediaQuery.size.height -
               appBar.preferredSize.height -
@@ -110,6 +174,7 @@ class _MyHomePageState extends State<MyHomePage> {
           0.7,
       child: TransactionList(_userTransactions, deleteTransaction),
     );
+
     return Scaffold(
       appBar: appBar,
       body: SingleChildScrollView(
@@ -117,38 +182,9 @@ class _MyHomePageState extends State<MyHomePage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             if (isLandscape)
-              Row(
-                children: <Widget>[
-                  Text('Show Chart'),
-                  Switch(
-                    value: _showChart,
-                    onChanged: (val) => {
-                      setState(() {
-                        _showChart = val;
-                      })
-                    },
-                  )
-                ],
-              ),
+              ..._buildLandscapeContent(mediaQuery, appBar, transListWidget),
             if (!isLandscape)
-              Container(
-                height: (mediaQuery.size.height -
-                        appBar.preferredSize.height -
-                        mediaQuery.padding.top) *
-                    0.3,
-                child: Chart(_userTransactions),
-              ),
-            if (!isLandscape) transListWidget,
-            if (isLandscape)
-              _showChart
-                  ? Container(
-                      height: (mediaQuery.size.height -
-                              appBar.preferredSize.height -
-                              mediaQuery.padding.top) *
-                          0.7,
-                      child: Chart(_userTransactions),
-                    )
-                  : transListWidget,
+              ..._buildPortraitContent(mediaQuery, appBar, transListWidget),
           ],
         ),
       ),
